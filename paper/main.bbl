@@ -1,0 +1,61 @@
+\begin{thebibliography}{7}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Farhadi et~al.(2023)Farhadi, Ansari, and
+  Jara-Moroni]{farhadi2023dialysis}
+Farbod Farhadi, Sina Ansari, and Francisco Jara-Moroni.
+\newblock Optimization models for patient and technician scheduling in
+  hemodialysis centers.
+\newblock \emph{Health Care Management Science}, 26\penalty0 (3):\penalty0
+  558--582, 2023.
+\newblock \doi{10.1007/s10729-023-09642-7}.
+
+\bibitem[Reihaneh et~al.(2023)Reihaneh, Ansari, and
+  Farhadi]{reihaneh2023dialysis}
+Mohammad Reihaneh, Sina Ansari, and Farbod Farhadi.
+\newblock Patient appointment scheduling at hemodialysis centers: An exact
+  branch and price approach.
+\newblock \emph{European Journal of Operational Research}, 309\penalty0
+  (1):\penalty0 35--52, 2023.
+\newblock \doi{10.1016/j.ejor.2023.01.024}.
+
+\bibitem[Bertsimas et~al.(2011)Bertsimas, Farias, and
+  Trichakis]{bertsimas2011price}
+Dimitris Bertsimas, Vivek~F. Farias, and Nikolaos Trichakis.
+\newblock The price of fairness.
+\newblock \emph{Operations Research}, 59\penalty0 (1):\penalty0 17--31, 2011.
+\newblock \doi{10.1287/opre.1100.0865}.
+
+\bibitem[Gale and Shapley(1962)]{gale1962college}
+David Gale and Lloyd~S. Shapley.
+\newblock College admissions and the stability of marriage.
+\newblock \emph{The American Mathematical Monthly}, 69\penalty0 (1):\penalty0
+  9--15, 1962.
+\newblock \doi{10.2307/2312726}.
+
+\bibitem[Huangfu and Hall(2018)]{huangfu2018highs}
+Qi~Huangfu and J.~A.~Julian Hall.
+\newblock Parallelizing the dual revised simplex method.
+\newblock \emph{Mathematical Programming Computation}, 10\penalty0
+  (1):\penalty0 119--142, 2018.
+\newblock \doi{10.1007/s12532-017-0130-5}.
+
+\bibitem[Virtanen et~al.(2020)Virtanen, Gommers, Oliphant,
+  et~al.]{virtanen2020scipy}
+Pauli Virtanen, Ralf Gommers, Travis~E. Oliphant, et~al.
+\newblock {SciPy} 1.0: fundamental algorithms for scientific computing in
+  {Python}.
+\newblock \emph{Nature Methods}, 17:\penalty0 261--272, 2020.
+\newblock \doi{10.1038/s41592-019-0686-2}.
+
+\bibitem[Efron and Tibshirani(1993)]{efron1993bootstrap}
+Bradley Efron and Robert~J. Tibshirani.
+\newblock \emph{An Introduction to the Bootstrap}.
+\newblock Chapman and Hall, New York, 1993.
+\newblock \doi{10.1201/9780429246593}.
+
+\end{thebibliography}

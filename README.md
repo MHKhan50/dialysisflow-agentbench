@@ -57,6 +57,10 @@ What the numbers show:
 3. **Placing as many as possible is easy here; fairness is not.** Both greedy planners matched or nearly matched the optimal number placed, but the cohort gap was 15.5–16.9 points against 10.0 for the fair optimum, and under high scarcity 23.3 against 4.1. Only the fair objective kept patients who need transport from falling behind.
 4. Maximising the worse-off cohort cost nothing in patients placed and almost nothing in burden compared with the throughput optimum.
 
+## Paper
+
+`paper/main.pdf`: *Separate Units Lose Patients, Greedy Planners Lose Fairness: Re-placing Dialysis Patients After a Unit Closure* (LaTeX source in `paper/`).
+
 ## Run
 
 ```bash
