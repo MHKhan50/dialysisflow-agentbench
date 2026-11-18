@@ -1,5 +1,7 @@
 # DialysisFlow-AgentBench v0.2.0
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24354745.svg)](https://doi.org/10.5281/zenodo.24354745)
+
 **Re-placing displaced dialysis patients after a unit closure: independent unit agents, coordinated agents and an exact optimum on 1,200 synthetic networks**
 
 > Research benchmark on **synthetic operational data only**. It models chairs, shifts, travel time and a shared transport fleet. It holds no patient data, no clinical information and makes no clinical or treatment decisions.
