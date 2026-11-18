@@ -1,1 +1,4 @@
-# Python standard library only; no third-party dependencies.
+numpy>=1.26
+scipy>=1.11
+matplotlib>=3.8
+pytest>=8

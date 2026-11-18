@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "DialysisFlow-AgentBench: re-placing displaced dialysis patients after a unit closure"
+version: 0.2.0
+date-released: 2026-11-18
+type: software
+abstract: "A synthetic benchmark for re-placing patients after a dialysis unit closes some or all of its shifts. Seeded networks of 4 to 6 receiving units with limited chairs, travel limits and a shared transport fleet are generated at three chair-scarcity levels and two closure severities (1,200 scenarios). Seven policies are compared: two central greedy planners, receiving units acting independently with and without a safety gate, units coordinating through a shared ledger, and two exact MILP optima (most patients placed; fairest between patients who need transport and those who do not). Independent units placed 70.4% of displaced patients against 83.6% at the optimum and overbooked transport in 47.8% of scenarios; coordination placed 83.0%. Greedy planners matched the optimal number placed but left a cohort gap of 15.5 to 16.9 points against 10.0 for the fair optimum. Operational data only; no patient or clinical data."
+authors:
+  - family-names: Hussain
+    given-names: Muzammal
+    orcid: "https://orcid.org/0009-0001-2570-5686"
+repository-code: "https://github.com/MHKhan50/dialysisflow-agentbench"
+license: MIT
+keywords:
+  - multi-agent coordination
+  - resource allocation
+  - mixed-integer programming
+  - healthcare operations
+  - fairness
+  - benchmark

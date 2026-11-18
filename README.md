@@ -1,106 +1,92 @@
-# DialysisFlow-AgentBench v0.1.0
+# DialysisFlow-AgentBench v0.2.0
 
-A reproducible **synthetic operational benchmark** for evaluating recovery planning after haemodialysis service disruptions.
+**Re-placing displaced dialysis patients after a unit closure: independent unit agents, coordinated agents and an exact optimum on 1,200 synthetic networks**
 
-> Research prototype only. It is not a clinical decision-support system. It does not use patient data, prescribe treatment, set clinical parameters, or determine medical urgency. All scenarios and priority labels are synthetic and illustrative.
+> Research benchmark on **synthetic operational data only**. It models chairs, shifts, travel time and a shared transport fleet. It holds no patient data, no clinical information and makes no clinical or treatment decisions.
 
-## Research question
+## Question
 
-Does a safety-constrained, coordinated multi-agent workflow produce more feasible and fair operational recovery plans than conventional, single-agent, or uncoordinated approaches?
+When one dialysis unit closes some or all of its shifts, its patients must be placed in free chairs at nearby units. Can receiving units acting as separate agents do this as well as a central planner? Does coordination through a shared ledger close the gap? How far are simple policies from the exact optimum on the number of patients placed and on the gap between patients who need transport and those who travel independently?
 
-## What's included
+## Model
 
-- Synthetic disruption scenarios (`data/scenarios.csv`)
-- Four transparent scheduling/recovery policies:
-  - `centralised_baseline`
-  - `single_agent_baseline`
-  - `uncoordinated_multi_agent`
-  - `coordinated_safety_gated`
-- Explicit operational constraints and a human-approval flag
-- Reproducible multi-seed experiment runner
-- CSV episode-level results and JSON summary
-- Unit tests
-- No external services or LLM API required
+Each scenario is generated from its own seed:
 
-## Important modelling boundary
+- 4 to 6 receiving units, 8 to 16 chairs each, four shifts (MWF morning and afternoon, TTS morning and afternoon).
+- Chairs already in use: 60–75% (low scarcity), 75–85% (medium) or 85–95% (high).
+- The closed unit loses two shifts (partial) or all four (full); 80–100% of its chairs were occupied.
+- About 35% of displaced patients need transport. They can travel at most 45 minutes and each needs a seat in the shared transport fleet for their shift. Independent patients can travel at most 75 minutes.
+- A patient keeps their weekday pattern. Moving between morning and afternoon is allowed and adds a burden of 20 minutes.
 
-This benchmark models **operational slot allocation only**. It deliberately avoids clinical decisions. The synthetic `priority_class` is a scenario attribute for testing allocation fairness, not a clinical triage score or recommendation. A real deployment would require clinical governance, validated protocols, privacy/security review, human oversight, and prospective evaluation.
+1,200 scenarios: 3 scarcity levels × 2 severities × 200 seeds.
 
-## Requirements
+## Policies
 
-- Python 3.9+
-- No third-party packages required
+| Policy | What it does |
+|---|---|
+| `list_order_greedy` | Central planner; patients in list order, each to the lowest-burden free option |
+| `most_constrained_greedy` | Central planner; patients with the fewest options first |
+| `independent_units` | Each unit offers its own chairs, nearest patients first, in one round, and books transport as if no other unit used the fleet |
+| `independent_units_gated` | The same proposals checked against the shared fleet before commit; bookings that do not fit are dropped |
+| `coordinated_units` | Rounds of offers against a shared ledger; patients accept their best offer and units re-offer what is left |
+| `optimal_throughput` | Exact MILP: most patients placed, then least burden |
+| `optimal_fair` | Exact MILP: highest placement rate for the worse-off cohort, then most placed, then least burden |
 
-## Quick start (VS Code on macOS)
+No policy has errors added on purpose (v0.1.0 did; see CHANGELOG). The only source of infeasible plans is units acting on their own view of the shared transport fleet.
 
-Open this folder in VS Code, then open **Terminal → New Terminal** and run:
+## Results (1,200 scenarios, 95% bootstrap intervals over scenarios)
 
-```bash
-python3 --version
-python3 -m venv .venv
-source .venv/bin/activate
-python3 run_benchmark.py
-python3 -m unittest discover -s tests -v
-```
+| Policy | Placed (%) | Unmet, transport (%) | Unmet, independent (%) | Cohort gap (points) | Mean burden (min) | Feasible plans (%) |
+|---|---|---|---|---|---|---|
+| list_order_greedy | 83.3 [82.2, 84.3] | 25.5 | 12.1 | 15.5 [14.7, 16.2] | 30.9 | 100 |
+| most_constrained_greedy | 83.6 [82.5, 84.6] | 17.5 | 16.0 | 16.9 [16.1, 17.8] | 30.5 | 100 |
+| independent_units | 70.4 [69.1, 71.7] | 30.6 | 29.1 | 11.8 [11.1, 12.4] | 22.8 | 52.2 |
+| independent_units_gated | 67.6 [66.4, 68.8] | 38.7 | 29.1 | 16.4 [15.7, 17.1] | 22.9 | 100 |
+| coordinated_units | 83.0 [81.9, 84.1] | 26.0 | 12.2 | 16.0 [15.2, 16.7] | 26.1 | 100 |
+| optimal_throughput | 83.6 [82.5, 84.6] | 23.9 | 12.5 | 13.8 [13.1, 14.4] | 25.0 | 100 |
+| optimal_fair | 83.6 [82.5, 84.6] | 21.7 | 13.6 | 10.0 [9.4, 10.6] | 25.0 | 100 |
 
-On Windows PowerShell, activate with:
+Full intervals: `results/summary.md` and `results/results.json`.
 
-```powershell
-py -m venv .venv
-.venv\Scripts\Activate.ps1
-py run_benchmark.py
-py -m unittest discover -s tests -v
-```
+![Placement and cohort gap by scarcity](results/fig_fulfilment_gap.png)
 
-## Outputs
+What the numbers show:
 
-Running the benchmark creates:
+1. **Independent units lose patients.** In one round they placed 70.4% against 83.6% at the optimum (paired difference −13.2 points, 95% CI −13.9 to −12.4) and overbooked the transport fleet in 47.8% of scenarios. A safety gate made every plan feasible but placed even fewer (67.6%): the gate removes bad bookings, it does not find new places.
+2. **Coordination recovers almost all of it.** Rounds of offers against a shared ledger placed 83.0%, within 0.5 points of the optimum, at about one extra minute of burden per patient.
+3. **Placing as many as possible is easy here; fairness is not.** Both greedy planners matched or nearly matched the optimal number placed, but the cohort gap was 15.5–16.9 points against 10.0 for the fair optimum, and under high scarcity 23.3 against 4.1. Only the fair objective kept patients who need transport from falling behind.
+4. Maximising the worse-off cohort cost nothing in patients placed and almost nothing in burden compared with the throughput optimum.
 
-- `outputs/episode_results.csv` — one row per scenario, policy and seed
-- `outputs/policy_summary.csv` — aggregated policy metrics
-- `outputs/summary.json` — machine-readable run metadata and aggregates
-
-All outputs are generated locally and can be regenerated by rerunning `python3 run_benchmark.py`.
-
-## Reproducibility
-
-Default seeds: `11, 23, 37, 51, 79`. Override them:
+## Run
 
 ```bash
-python3 run_benchmark.py --seeds 11 23 37
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+pytest -q
+python3 run_benchmark.py            # 1,200 scenarios, about 90 seconds on a laptop CPU
 ```
 
-The benchmark is deterministic for a fixed version of the code, input dataset, and seed list.
+`--per-cell N` changes the number of seeds per scarcity × severity cell; `--seed` the first seed.
 
-## Dataset
+## Files
 
-`data/scenarios.csv` contains synthetic disruption scenarios. The generated records are fictional and must not be interpreted as representative of any real dialysis service.
+- `dialysisflow/network.py`: seeded scenario generator
+- `dialysisflow/policies.py`: the seven policies, including the exact MILP (SciPy/HiGHS)
+- `dialysisflow/evaluate.py`: scoring, paired bootstrap, outputs
+- `results/`: per-scenario rows, summary, `results.json`, chart
 
-## Suggested research protocol
+## Limitations
 
-1. Freeze the dataset and policy definitions before examining comparative results.
-2. Run all policies on identical scenarios and seeds.
-3. Report feasibility, unallocated sessions, delay burden, fairness gap, recovery score, and human-review rate.
-4. Use paired comparisons by scenario/seed and report uncertainty (for example, bootstrap confidence intervals in a later analysis stage).
-5. Conduct sensitivity analyses over disruption severity, capacity loss, and staffing availability.
-6. Do not claim clinical safety or clinical effectiveness from this operational simulation.
+- Synthetic networks. Chair counts, occupancy, travel limits, transport share and fleet size are illustrative, not taken from any service.
+- Travel is straight-line distance converted to minutes. There is no road network, traffic or multi-day planning.
+- The two cohorts are an operational construct (needs transport or not). The cohort gap is not a validated social or clinical fairness measure.
+- Unit agents are rule-based. No language-model agents are evaluated in this version.
+- Clinical priority, infection control, staffing rules and patient preference are not modelled.
 
-## Repository publication
+## Related work
 
-Suggested repository name: `dialysisflow-agentbench`
+Dialysis scheduling has been studied with exact optimisation, for example patient and technician scheduling (Farhadi, Ansari and Jara-Moroni, *Health Care Management Science*, 2023, doi:10.1007/s10729-023-09642-7) and branch-and-price appointment scheduling (Reihaneh, Ansari and Farhadi, *European Journal of Operational Research*, 2023, doi:10.1016/j.ejor.2023.01.024). This benchmark looks at a different setting: one-off re-placement after a closure, and what is lost when the receiving units decide separately.
 
-```bash
-git init
-git add .
-git diff --cached --check
-git commit -m "Initial release: DialysisFlow-AgentBench v0.1.0"
-git branch -M main
-git remote add origin https://github.com/MHKhan50/dialysisflow-agentbench.git
-git push -u origin main
-```
+## Citation and licence
 
-Create the empty GitHub repository first. If the remote already exists, do not repeat `git remote add origin`; use `git remote -v` to inspect it.
-
-## License
-
-MIT. See `LICENSE`.
+See `CITATION.cff`. Code: MIT licence.
