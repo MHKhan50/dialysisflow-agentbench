@@ -1,11 +1,10 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 title: "DialysisFlow-AgentBench: re-placing displaced dialysis patients after a unit closure"
-version: 0.2.0
+version: 0.2.1
 date-released: 2026-11-18
-doi: "10.5281/zenodo.24354745"
 type: software
-abstract: "A synthetic benchmark for re-placing patients after a dialysis unit closes some or all of its shifts. Seeded networks of 4 to 6 receiving units with limited chairs, travel limits and a shared transport fleet are generated at three chair-scarcity levels and two closure severities (1,200 scenarios). Seven policies are compared: two central greedy planners, receiving units acting independently with and without a safety gate, units coordinating through a shared ledger, and two exact MILP optima (most patients placed; fairest between patients who need transport and those who do not). Independent units placed 70.4% of displaced patients against 83.6% at the optimum and overbooked transport in 47.8% of scenarios; coordination placed 83.0%. Greedy planners matched the optimal number placed but left a cohort gap of 15.5 to 16.9 points against 10.0 for the fair optimum. Operational data only; no patient or clinical data."
+abstract: "A synthetic benchmark for re-placing patients after a dialysis unit closes some or all of its shifts. Seeded networks of 4 to 6 receiving units with limited chairs, travel limits and a shared transport fleet are generated at three chair-scarcity levels and two closure severities (1,200 scenarios). Nine policies are compared: two central greedy planners, four ways in which receiving units decide separately (one round, with a safety gate, with fixed transport quotas, and repeated rounds without a shared record of transport), units coordinating through a shared ledger, and two exact MILP optima (most patients placed; fairest between patients who need transport and those who do not). Independent units placed 70.4% of displaced patients against 83.6% at the optimum and overbooked transport in 47.8% of scenarios; repeated rounds recovered placements but overbooked in 63.6% of plans, and fixed quotas placed 66.6%. Coordination placed 83.0% with every plan feasible. Greedy planners matched the optimal number placed but left a cohort gap of 15.5 to 16.9 points against 10.0 for the fair optimum. A sensitivity sweep shows that transport fleet size largely sets the gap. Operational data only; no patient or clinical data."
 authors:
   - family-names: Hussain
     given-names: Muzammal

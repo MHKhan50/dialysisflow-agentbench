@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.1 (2026-11-18)
+
+- Two stronger decentralised baselines: fixed transport quotas per unit, and repeated rounds of separate offers without a shared record of transport.
+- Sensitivity sweep over the share of patients needing transport and fleet size (`results/sensitivity_summary.csv`).
+- The MILP now stops with an error unless every stage is solved to proven optimality.
+- Package versions pinned in `requirements.txt`.
+- Paper: related work on dialysis in disasters and equitable re-placement, clearer wording on overbooking, the cohort gap and burden comparisons.
+- Results for the seven original policies are unchanged.
+
 ## 0.2.0 (2026-11-18)
 
 Redesigned as a new experiment.

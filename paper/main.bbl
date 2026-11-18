@@ -1,9 +1,46 @@
-\begin{thebibliography}{7}
+\begin{thebibliography}{11}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Liu and Mostafavi(2023)]{liu2023equitable}
+Chia-Fu Liu and Ali Mostafavi.
+\newblock An equitable patient reallocation optimization and temporary facility
+  placement model for maximizing critical care system resilience in disasters.
+\newblock \emph{Healthcare Analytics}, 4:\penalty0 100268, 2023.
+\newblock \doi{10.1016/j.health.2023.100268}.
+
+\bibitem[Tung et~al.(2024)Tung, Mostafavi, Li, Li, Rasheed, and
+  Shafique]{tung2024critical}
+Emmanuel Tung, Ali Mostafavi, Maoxu Li, Sophie Li, Zeeshan Rasheed, and Khurram
+  Shafique.
+\newblock A system for critical facility and resource optimization in disaster
+  management and planning, 2024.
+
+\bibitem[Bertsimas et~al.(2011)Bertsimas, Farias, and
+  Trichakis]{bertsimas2011price}
+Dimitris Bertsimas, Vivek~F. Farias, and Nikolaos Trichakis.
+\newblock The price of fairness.
+\newblock \emph{Operations Research}, 59\penalty0 (1):\penalty0 17--31, 2011.
+\newblock \doi{10.1287/opre.1100.0865}.
+
+\bibitem[Smith et~al.(2020)Smith, Zucker, and Frasso]{smith2020disasters}
+Rashida~S. Smith, Robert~J. Zucker, and Rosemary Frasso.
+\newblock Natural disasters in the {Americas}, dialysis patients, and
+  implications for emergency planning: A systematic review.
+\newblock \emph{Preventing Chronic Disease}, 17:\penalty0 E42, 2020.
+\newblock \doi{10.5888/pcd17.190430}.
+
+\bibitem[Kelman et~al.(2015)Kelman, Finne, Bogdanov, Worrall, Margolis, Rising,
+  MaCurdy, and Lurie]{kelman2015sandy}
+Jeffrey Kelman, Kristen Finne, Alina Bogdanov, Chris Worrall, Gregg Margolis,
+  Kristin Rising, Thomas~E. MaCurdy, and Nicole Lurie.
+\newblock Dialysis care and death following {Hurricane Sandy}.
+\newblock \emph{American Journal of Kidney Diseases}, 65\penalty0 (1):\penalty0
+  109--115, 2015.
+\newblock \doi{10.1053/j.ajkd.2014.07.005}.
 
 \bibitem[Farhadi et~al.(2023)Farhadi, Ansari, and
   Jara-Moroni]{farhadi2023dialysis}
@@ -22,13 +59,6 @@ Mohammad Reihaneh, Sina Ansari, and Farbod Farhadi.
 \newblock \emph{European Journal of Operational Research}, 309\penalty0
   (1):\penalty0 35--52, 2023.
 \newblock \doi{10.1016/j.ejor.2023.01.024}.
-
-\bibitem[Bertsimas et~al.(2011)Bertsimas, Farias, and
-  Trichakis]{bertsimas2011price}
-Dimitris Bertsimas, Vivek~F. Farias, and Nikolaos Trichakis.
-\newblock The price of fairness.
-\newblock \emph{Operations Research}, 59\penalty0 (1):\penalty0 17--31, 2011.
-\newblock \doi{10.1287/opre.1100.0865}.
 
 \bibitem[Gale and Shapley(1962)]{gale1962college}
 David Gale and Lloyd~S. Shapley.

@@ -36,17 +36,21 @@ units within a few days. We ask what is lost when the receiving units make these
 what a central planner gets right and wrong compared with an exact optimum. We generate 1,200 synthetic
 networks of four to six receiving units at three levels of chair scarcity and two closure severities. Each
 network has travel limits and a shared patient-transport fleet, and about a third of displaced patients need
-transport. Seven policies are compared on the same scenarios: two central greedy planners, receiving units
-acting independently with and without a commit-time safety gate, units coordinating through a shared ledger,
-and two mixed-integer optima, one maximising the number placed and one first maximising the placement rate
-of the worse-off group. Units acting independently in one round placed 70.4\% of displaced patients against
-83.6\% at the optimum (paired difference $-13.2$ points, 95\% CI $-13.9$ to $-12.4$) and overbooked the
-transport fleet in 47.8\% of scenarios. A safety gate made every plan feasible but placed fewer patients
-(67.6\%). Rounds of offers against a shared ledger recovered almost all of the loss (83.0\%). Greedy planners
+transport. Nine policies are compared on the same scenarios: two central greedy planners; four ways in which
+receiving units decide separately (one round, one round with a commit-time safety gate, one round with fixed
+transport quotas, and repeated rounds without a shared record of transport); units coordinating through a
+shared ledger; and two mixed-integer optima, one maximising the number placed and one first maximising the
+placement rate of the worse-off group. Units acting independently in one round placed 70.4\% of displaced
+patients against 83.6\% at the optimum (paired difference $-13.2$ points, 95\% CI $-13.9$ to $-12.4$) and
+overbooked the transport fleet in 47.8\% of scenarios. Repeated rounds recovered the lapsed offers but
+overbooked transport in 63.6\% of plans; fixed quotas kept plans feasible but placed 66.6\%. Rounds of offers
+against a shared ledger recovered almost all of the loss (83.0\%, all plans feasible). Greedy planners
 placed as many patients as the optimum, but left a gap between patients who need transport and those who do
 not of 15.5--16.9 points, against 10.0 for the fairness-first optimum; under high scarcity the gap was 23.3
-points for the best greedy planner and 4.1 for the fairness-first optimum, at no cost in patients placed. The
-benchmark is operational and synthetic; it contains no patient data and makes no clinical decisions.
+points for the most-constrained greedy planner and 4.1 for the fairness-first optimum, at no cost in patients
+placed. A sensitivity sweep shows that transport fleet size, more than the share of patients who need transport,
+sets how large the gap must be. The benchmark is operational and synthetic; it contains no patient data and
+makes no clinical decisions.
 \end{abstract}
 
 \section{Introduction}
@@ -56,18 +60,39 @@ through a water-plant failure, flooding or a staffing gap, its patients must be 
 in the same network. In practice this is often negotiated unit by unit: each receiving unit offers the chairs
 it can spare to the patients it can reach.
 
-Exact optimisation for dialysis scheduling is well developed for routine planning within a centre, including
-patient and technician scheduling \citep{farhadi2023dialysis} and appointment scheduling solved by branch and
-price \citep{reihaneh2023dialysis}. Our setting is different: a one-off re-placement across a network, where
-the question is not only how good the best plan is, but what is lost when units decide separately, and
-whether simple rules leave some patients systematically worse off.
+Section~\ref{sec:related} reviews earlier work. Exact optimisation for re-placing dialysis patients after a
+disruption already exists \citep{liu2023equitable,tung2024critical}. What has not been measured, to our
+knowledge, is what is lost when receiving units decide separately rather than through one plan, and whether
+simple central rules leave one group of patients systematically worse off.
 
-We make three contributions. First, a seeded scenario generator and seven policies with no errors added on
-purpose, so that differences arise only from how each policy uses shared resources. Second, a comparison
+We make four contributions. First, a seeded scenario generator and nine policies with no errors added on
+purpose, so that differences arise only from how each policy uses shared resources, including three stronger
+decentralised baselines. Second, a comparison
 with two exact optima, one for the number placed and one that first protects the worse-off group, in the
 spirit of max-min fairness \citep{bertsimas2011price}. Third, paired estimates over 1,200 scenarios, showing
 that the main loss from separate decisions is patients placed, while the main weakness of greedy central
-planning is fairness between groups.
+planning is fairness between groups. Fourth, a sensitivity sweep over transport demand and fleet size.
+
+\section{Related work}\label{sec:related}
+\paragraph{Dialysis in disasters.} Missed dialysis sessions are linked to higher mortality and more
+hospitalisation, and disasters disrupt dialysis through transport, power and water failures
+\citep{smith2020disasters}. In the United States, the Kidney Community Emergency Response (KCER) coalition of
+kidney organisations, dialysis providers and government bodies coordinates the response; after Hurricane
+Sandy, facilities that dialysed patients early were associated with fewer adverse outcomes
+\citep{kelman2015sandy}. This literature describes coordination in practice but does not quantify what is lost
+without it.
+
+\paragraph{Optimisation of patient re-placement.} Liu and Mostafavi formulate equitable patient reallocation
+and temporary facility placement for dialysis centres as an integer programme, using human mobility data for
+Harris County, Texas \citep{liu2023equitable}; Tung et al.\ extend this with a bio-inspired solver
+\citep{tung2024critical}. Within-centre scheduling is also well studied, including patient and technician
+scheduling \citep{farhadi2023dialysis} and appointment scheduling by branch and price
+\citep{reihaneh2023dialysis}.
+
+\paragraph{What is new here.} These studies optimise a single central plan. We hold the scenario fixed and
+compare that plan with the ways units actually decide when no one plans for the whole network: separate offers,
+repeated rounds, fixed quotas and a shared ledger. We also show that the order rule of a simple central planner,
+not only its objective, decides which group is left without a place.
 
 \section{Model}
 \paragraph{Network.} Each scenario has one closed unit and four to six receiving units placed 8 to 30\,km
@@ -90,7 +115,8 @@ shift there are spare seats for 60--100\% of the transport patients displaced fr
 the resource on which separate decisions can collide.
 
 \section{Policies}
-All policies see the same scenario. None has random errors added.
+All policies see the same scenario. None has random errors added. The four decentralised variants differ only
+in how they handle lapsed offers and the shared transport fleet.
 \begin{itemize}
 \item \textbf{List-order greedy}: one central planner takes patients in list order and gives each the free
 option with the lowest burden.
@@ -100,6 +126,11 @@ can serve, nearest first, and books transport as if no other unit used the fleet
 places takes the one with the lowest burden; the other offers lapse.
 \item \textbf{Independent units with a gate}: the same proposals, checked against the shared fleet before they
 are committed; bookings that do not fit are dropped.
+\item \textbf{Quota units}: one round of separate offers, but each unit may book only its own fixed share of
+transport seats, split in proportion to its free chairs.
+\item \textbf{Repeated independent units}: rounds of separate offers in which units re-offer lapsed chairs to
+patients still waiting, but each still books transport as if the whole fleet were free, because there is no
+shared record of seats.
 \item \textbf{Coordinated units}: rounds of offers against a shared ledger. Patients accept their best offer,
 the ledger records chairs and seats, and units re-offer what is left to patients still waiting, until no
 offer is accepted. The procedure resembles deferred acceptance \citep{gale1962college}.
@@ -108,7 +139,9 @@ total burden.
 \item \textbf{Fairness-first optimum}: first maximises the lower of the two groups' placement rates, then the
 number placed, then minimises burden.
 \end{itemize}
-The optima are solved with HiGHS \citep{huangfu2018highs} through SciPy \citep{virtanen2020scipy}.
+The optima are solved with HiGHS \citep{huangfu2018highs} through SciPy \citep{virtanen2020scipy} in three
+lexicographic stages. The code stops with an error unless every stage is solved to proven optimality; all
+solves in this study were.
 
 \section{Metrics and analysis}
 For each plan we record the share of displaced patients placed, the unmet rate in each group, the
@@ -119,13 +152,18 @@ violations. Violations are counted, never repaired.
 
 The 1,200 scenarios are 200 seeds in each of the six scarcity--severity cells. Every policy runs on every
 scenario, so comparisons are paired. Intervals are 95\% percentile bootstrap intervals over scenarios with
-2,000 resamples \citep{efron1993bootstrap}. The run takes about 90 seconds on a laptop CPU.
+2,000 resamples \citep{efron1993bootstrap}. For the sensitivity sweep, the share of patients who need transport
+(0.20, 0.35, 0.50) and the fleet size (0.5, 1.0 and 1.5 times the default) are varied at medium scarcity, with
+100 seeds for each severity in each of the nine settings; the seeds are the same in every setting. The full run
+takes about three minutes on a laptop CPU.
 
 \section{Results}
 \begin{table}[t]
 \centering
 \caption{All 1,200 scenarios. Placed and cohort gap with 95\% bootstrap intervals; unmet rates by group;
-mean burden in minutes per placed patient; feasible plans.}
+mean burden in minutes per placed patient; feasible plans. The cohort gap is the absolute difference between
+the two groups' unmet rates computed in each scenario and then averaged, so it is not the difference between
+the two average unmet rates in the same row.}
 \label{tab:main}
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{lcccccc}
@@ -136,9 +174,11 @@ List-order greedy & 83.3 [82.2, 84.3] & 25.5 & 12.1 & 15.5 [14.7, 16.2] & 30.9 &
 Most-constrained greedy & 83.6 [82.5, 84.6] & 17.5 & 16.0 & 16.9 [16.1, 17.8] & 30.5 & 100 \\
 Independent units & 70.4 [69.1, 71.7] & 30.6 & 29.1 & 11.8 [11.1, 12.4] & 22.8 & 52.2 \\
 Independent units + gate & 67.6 [66.4, 68.8] & 38.7 & 29.1 & 16.4 [15.7, 17.1] & 22.9 & 100 \\
+Quota units & 66.6 [65.4, 67.8] & 51.2 & 24.1 & 28.7 [27.7, 29.7] & 23.3 & 100 \\
+Repeated independent units & 85.4 [84.3, 86.5] & 17.5 & 13.0 & 8.1 [7.5, 8.8] & 26.0 & 36.4 \\
 Coordinated units & 83.0 [81.9, 84.1] & 26.0 & 12.2 & 16.0 [15.2, 16.7] & 26.1 & 100 \\
 Throughput optimum & 83.6 [82.5, 84.6] & 23.9 & 12.5 & 13.8 [13.1, 14.4] & 25.0 & 100 \\
-Fairness-first optimum & 83.6 [82.5, 84.6] & 21.7 & 13.6 & 10.0 [9.4, 10.6] & 25.0 & 100 \\
+Fairness-first optimum & 83.6 [82.4, 84.6] & 21.7 & 13.6 & 10.0 [9.4, 10.6] & 25.0 & 100 \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -154,9 +194,18 @@ bootstrap intervals. Each bar is 400 scenarios. ``Central greedy'' is the most-c
 \paragraph{Separate decisions lose patients.} Units acting independently placed 70.4\% of displaced
 patients, 13.2 points below the optimum (95\% CI $-13.9$ to $-12.4$; Table~\ref{tab:main}). The loss has two
 sources. Offers to patients who accepted elsewhere lapse, so chairs stay empty; and units book transport
-against the whole fleet, so 47.8\% of plans overbooked it, by 0.94 seats on average. The gap widened with
+against the whole fleet, so 47.8\% of plans overbooked it; those plans used on average 1.97 seats more than
+existed. The gap widened with
 scarcity: 4.9 points at low scarcity and 17.3 at high (Figure~\ref{fig:main}). Their cohort gap of 11.8 points
 looks small only because both groups were badly served (unmet rates 30.6\% and 29.1\%).
+
+\paragraph{Stronger decentralised baselines separate the two causes.} Repeating the rounds so that lapsed
+chairs are offered again placed 85.4\% of patients, more than the optimum, but only because 63.6\% of its plans
+overbooked transport, by 2.48 seats on average when they did; only 36.4\% were feasible. Giving each unit a fixed
+transport quota made every plan feasible but placed 66.6\%, and left 51.2\% of transport patients without a
+place, because seats held by one unit could not be used by another. Lapsed offers are therefore fixed by
+repeated rounds, but the shared transport fleet needs a shared record: neither more rounds nor fixed quotas
+replace it.
 
 \paragraph{A safety gate makes plans feasible, not better.} Checking the proposals against the shared fleet
 before commit removed every violation but placed 67.6\%, 2.8 points fewer than without the gate, and raised
@@ -170,7 +219,7 @@ placed patient than the fairness-first optimum.
 \paragraph{Greedy planners place enough patients but not fairly.} Both greedy planners placed as many patients
 as the optimum or within 0.3 points of it, but at a cost in fairness and burden. Their cohort gaps were 15.5
 and 16.9 points against 10.0 for the fairness-first optimum, and they gave 5.5--5.8 more minutes of burden
-per patient. Placing the most constrained patients first moved unmet patients from the transport group to the
+per patient than the fairness-first optimum (5.6--5.9 more than the throughput optimum). Placing the most constrained patients first moved unmet patients from the transport group to the
 independent group: under high scarcity it left 41.4\% of independent patients unplaced against 21.6\% of
 transport patients, a gap of 23.3 points. The fairness-first optimum held the gap to 4.1 points at the same
 number placed.
@@ -180,10 +229,38 @@ optimum in every cell and had the same mean burden to one decimal place. Under l
 left a gap of about 15 points: transport seats, not chairs, were the binding constraint, and no allocation of
 chairs can close that gap.
 
+\paragraph{Fleet size sets the gap.} Table~\ref{tab:sweep} varies transport at medium scarcity. With half the
+default fleet, the greedy planner, coordinated units and both optima all left 43--51\% of transport patients
+unplaced and a gap of 40--49 points: no allocation can close a gap created by missing seats. With 1.5 times the fleet, the
+fairness-first optimum held the gap to 2.3--5.6 points and the greedy planner to 6.5--7.9, while coordinated
+units stayed at 10.0--12.1. Changing the share of patients who need transport from 0.20 to 0.50 moved the gaps
+much less than changing the fleet.
+
+\begin{table}[t]
+\centering
+\caption{Sensitivity at medium scarcity, 35\% of patients needing transport (200 scenarios per row). Placed (\%)
+and cohort gap (points) by fleet size relative to the default. The full grid over 20\%, 35\% and 50\% transport
+demand is in \code{results/sensitivity\_summary.csv}.}
+\label{tab:sweep}
+\small
+\begin{tabular}{lcccccc}
+\toprule
+ & \multicolumn{2}{c}{Fleet $\times$0.5} & \multicolumn{2}{c}{Fleet $\times$1.0} & \multicolumn{2}{c}{Fleet $\times$1.5} \\
+Policy & Placed & Gap & Placed & Gap & Placed & Gap \\
+\midrule
+Most-constrained greedy & 80.8 & 48.3 & 90.6 & 14.6 & 93.9 & 6.5 \\
+Coordinated units & 80.7 & 49.0 & 89.9 & 18.5 & 92.6 & 10.0 \\
+Throughput optimum & 80.8 & 48.7 & 90.7 & 15.3 & 93.9 & 5.0 \\
+Fairness-first optimum & 80.8 & 48.2 & 90.7 & 12.7 & 93.9 & 2.8 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Discussion}
 The results separate two failure modes that are easy to conflate. When units decide separately, the main loss
-is patients placed, caused by lapsed offers and collisions on a shared resource. A commit-time gate prevents
-infeasible plans but does not restore placements; coordination through a shared ledger does. When a central
+is patients placed, caused by lapsed offers and collisions on a shared resource. Repeated rounds fix the first
+but not the second, fixed quotas avoid collisions by stranding seats, and a commit-time gate prevents infeasible
+plans without restoring placements. Only coordination through a shared ledger fixes both. When a central
 planner decides greedily, the number placed is close to optimal, but who goes unplaced depends on the order
 rule, and an apparently sensible rule (most constrained first) can shift the burden onto a different group.
 An explicit fairness objective fixed this at no cost in these scenarios, in line with the observation that
@@ -192,19 +269,19 @@ the price of fairness is often small \citep{bertsimas2011price}.
 For services, the practical points are to keep a shared ledger of scarce cross-unit resources such as
 transport, to plan centrally or in coordinated rounds rather than in one round of separate offers, and to
 state explicitly whose unmet need is being minimised. Where transport is the binding constraint, adding seats
-matters more than any allocation rule.
+matters more than any allocation rule, as the sensitivity sweep shows.
 
 \section{Limitations}
 The networks are synthetic: chair counts, occupancy, travel limits, the transport share and fleet size are
 illustrative and not taken from any service. Travel is straight-line distance converted to minutes, with no
 road network or multi-day planning. The two groups are an operational construct, and the cohort gap is not a
 validated social or clinical fairness measure. Clinical priority, infection control, staffing rules and
-patient preference are not modelled. Unit agents are rule-based; language-model agents are not evaluated in
-this study.
+patient preference are not modelled. Unit agents are rule-based; language-model agents that read the ledger and make offers are not evaluated in
+this study and are the natural next step.
 
 \section*{Data and code availability}
 Code, scenario generator, per-scenario results and figures are at
-\url{https://github.com/MHKhan50/dialysisflow-agentbench} (version 0.2.0), archived at \href{https://doi.org/10.5281/zenodo.24354745}{doi:10.5281/zenodo.24354745}. No patient data are used.
+\url{https://github.com/MHKhan50/dialysisflow-agentbench} (version 0.2.1). Version 0.2.0 is archived at \href{https://doi.org/10.5281/zenodo.24354745}{doi:10.5281/zenodo.24354745}; version 0.2.1 is archived as a newer version of the same Zenodo record. No patient data are used.
 
 \bibliographystyle{unsrtnat}
 \bibliography{references}

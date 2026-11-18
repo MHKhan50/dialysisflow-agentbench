@@ -106,6 +106,53 @@ def independent_units_gated(scenario: Scenario) -> Plan:
     return plan
 
 
+def _share_seats(scenario: Scenario) -> Dict[str, Dict[str, int]]:
+    """Split each shift's transport seats between units in proportion to their free chairs (largest remainder)."""
+    quotas: Dict[str, Dict[str, int]] = {u: {} for u in scenario.units}
+    for shift, seats in scenario.transport_seats.items():
+        chairs = {u: scenario.free_chairs[(u, shift)] for u in scenario.units}
+        total = sum(chairs.values())
+        if total == 0:
+            for u in scenario.units:
+                quotas[u][shift] = 0
+            continue
+        raw = {u: seats * chairs[u] / total for u in scenario.units}
+        base = {u: int(raw[u]) for u in scenario.units}
+        left = seats - sum(base.values())
+        for u in sorted(scenario.units, key=lambda u: (-(raw[u] - base[u]), u))[:left]:
+            base[u] += 1
+        for u in scenario.units:
+            quotas[u][shift] = base[u]
+    return quotas
+
+
+def quota_units(scenario: Scenario) -> Plan:
+    """One round of separate offers, but each unit may only book its own fixed quota of transport seats."""
+    quotas = _share_seats(scenario)
+    offers = _unit_offers(scenario, list(scenario.patients), dict(scenario.free_chairs), lambda unit: quotas[unit])
+    return {pid: min(o)[1:] for pid, o in offers.items()}
+
+
+def repeated_independent_units(scenario: Scenario, max_rounds: int = 50) -> Plan:
+    """Rounds of separate offers: units re-offer chairs that lapsed, but each still books transport
+    against the whole fleet, because there is no shared record of seats."""
+    chairs = dict(scenario.free_chairs)
+    plan: Plan = {}
+    waiting = list(scenario.patients)
+    for _ in range(max_rounds):
+        offers = _unit_offers(scenario, waiting, chairs, lambda unit: scenario.transport_seats)
+        if not offers:
+            break
+        for pid, options in offers.items():
+            _, unit, shift = min(options)
+            plan[pid] = (unit, shift)
+            chairs[(unit, shift)] -= 1
+        waiting = [p for p in waiting if p.pid not in plan]
+        if not waiting:
+            break
+    return plan
+
+
 def coordinated_units(scenario: Scenario, max_rounds: int = 50) -> Plan:
     """Rounds of offers against a shared ledger: patients accept their best offer, units re-offer what is left."""
     ledger = Ledger(scenario)
@@ -174,8 +221,8 @@ def _milp_plan(scenario: Scenario, fair: bool) -> Plan:
             upper_bounds[n:] = 1.0
         res = milp(c=c, constraints=LinearConstraint(np.array(rows), lo, hi), integrality=integrality,
                    bounds=Bounds(np.zeros(width), upper_bounds), options={"time_limit": 60})
-        if res.x is None:
-            raise RuntimeError("MILP failed for %s: %s" % (scenario.scenario_id, res.message))
+        if res.status != 0 or res.x is None:
+            raise RuntimeError("MILP not solved to proven optimality for %s: %s" % (scenario.scenario_id, res.message))
         return res
 
     extra: List = []
@@ -224,6 +271,8 @@ POLICIES: Dict[str, Callable[[Scenario], Plan]] = {
     "most_constrained_greedy": most_constrained_greedy,
     "independent_units": independent_units,
     "independent_units_gated": independent_units_gated,
+    "quota_units": quota_units,
+    "repeated_independent_units": repeated_independent_units,
     "coordinated_units": coordinated_units,
     "optimal_throughput": optimal_throughput,
     "optimal_fair": optimal_fair,

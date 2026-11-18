@@ -21,12 +21,15 @@ def test_options_respect_pattern_and_travel_limit():
             assert s.travel[(p.pid, unit)] <= TRAVEL_LIMIT[p.cohort]
 
 
-def test_all_policies_except_independent_units_are_feasible():
+UNCOORDINATED = {"independent_units", "repeated_independent_units"}
+
+
+def test_policies_with_a_shared_record_or_quota_are_feasible():
     for seed in range(1000, 1012):
         for scarcity in ("low", "high"):
             s = make_scenario(seed, scarcity, "full")
             for name, policy in POLICIES.items():
-                if name != "independent_units":
+                if name not in UNCOORDINATED:
                     assert score(s, policy(s))["feasible"] == 1.0, (name, seed)
 
 
@@ -59,3 +62,18 @@ def test_overbooking_is_counted_not_repaired():
         found += r["transport_overbooked"] > 0
         assert r["feasible"] == float(r["transport_overbooked"] == 0)
     assert found > 0
+
+
+def test_quota_never_exceeds_the_fleet():
+    from dialysisflow.policies import _share_seats
+    for seed in range(1000, 1050):
+        s = make_scenario(seed, "medium", "partial")
+        quotas = _share_seats(s)
+        for shift, seats in s.transport_seats.items():
+            assert sum(quotas[u][shift] for u in s.units) == seats
+
+
+def test_default_sweep_settings_reproduce_the_main_scenarios():
+    a = make_scenario(1234, "high", "full")
+    b = make_scenario(1234, "high", "full", transport_share=0.35, fleet_factor=1.0)
+    assert a.patients == b.patients and a.transport_seats == b.transport_seats

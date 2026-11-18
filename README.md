@@ -1,4 +1,4 @@
-# DialysisFlow-AgentBench v0.2.0
+# DialysisFlow-AgentBench v0.2.1
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24354745.svg)](https://doi.org/10.5281/zenodo.24354745)
 
@@ -30,6 +30,8 @@ Each scenario is generated from its own seed:
 | `most_constrained_greedy` | Central planner; patients with the fewest options first |
 | `independent_units` | Each unit offers its own chairs, nearest patients first, in one round, and books transport as if no other unit used the fleet |
 | `independent_units_gated` | The same proposals checked against the shared fleet before commit; bookings that do not fit are dropped |
+| `quota_units` | One round of separate offers, but each unit may book only its own fixed share of transport seats |
+| `repeated_independent_units` | Rounds of separate offers in which lapsed chairs are offered again, but transport is still booked as if the whole fleet were free |
 | `coordinated_units` | Rounds of offers against a shared ledger; patients accept their best offer and units re-offer what is left |
 | `optimal_throughput` | Exact MILP: most patients placed, then least burden |
 | `optimal_fair` | Exact MILP: highest placement rate for the worse-off cohort, then most placed, then least burden |
@@ -44,24 +46,31 @@ No policy has errors added on purpose (v0.1.0 did; see CHANGELOG). The only sour
 | most_constrained_greedy | 83.6 [82.5, 84.6] | 17.5 | 16.0 | 16.9 [16.1, 17.8] | 30.5 | 100 |
 | independent_units | 70.4 [69.1, 71.7] | 30.6 | 29.1 | 11.8 [11.1, 12.4] | 22.8 | 52.2 |
 | independent_units_gated | 67.6 [66.4, 68.8] | 38.7 | 29.1 | 16.4 [15.7, 17.1] | 22.9 | 100 |
+| quota_units | 66.6 [65.4, 67.8] | 51.2 | 24.1 | 28.7 [27.7, 29.7] | 23.3 | 100 |
+| repeated_independent_units | 85.4 [84.3, 86.5] | 17.5 | 13.0 | 8.1 [7.5, 8.8] | 26.0 | 36.4 |
 | coordinated_units | 83.0 [81.9, 84.1] | 26.0 | 12.2 | 16.0 [15.2, 16.7] | 26.1 | 100 |
 | optimal_throughput | 83.6 [82.5, 84.6] | 23.9 | 12.5 | 13.8 [13.1, 14.4] | 25.0 | 100 |
-| optimal_fair | 83.6 [82.5, 84.6] | 21.7 | 13.6 | 10.0 [9.4, 10.6] | 25.0 | 100 |
+| optimal_fair | 83.6 [82.4, 84.6] | 21.7 | 13.6 | 10.0 [9.4, 10.6] | 25.0 | 100 |
 
-Full intervals: `results/summary.md` and `results/results.json`.
+The cohort gap is computed in each scenario and then averaged, so it is not the difference between the two average unmet rates in the same row. Full intervals: `results/summary.md` and `results/results.json`. Every MILP stage was solved to proven optimality; the code stops otherwise.
 
 ![Placement and cohort gap by scarcity](results/fig_fulfilment_gap.png)
 
 What the numbers show:
 
-1. **Independent units lose patients.** In one round they placed 70.4% against 83.6% at the optimum (paired difference −13.2 points, 95% CI −13.9 to −12.4) and overbooked the transport fleet in 47.8% of scenarios. A safety gate made every plan feasible but placed even fewer (67.6%): the gate removes bad bookings, it does not find new places.
-2. **Coordination recovers almost all of it.** Rounds of offers against a shared ledger placed 83.0%, within 0.5 points of the optimum, at about one extra minute of burden per patient.
-3. **Placing as many as possible is easy here; fairness is not.** Both greedy planners matched or nearly matched the optimal number placed, but the cohort gap was 15.5–16.9 points against 10.0 for the fair optimum, and under high scarcity 23.3 against 4.1. Only the fair objective kept patients who need transport from falling behind.
-4. Maximising the worse-off cohort cost nothing in patients placed and almost nothing in burden compared with the throughput optimum.
+1. **Independent units lose patients.** In one round they placed 70.4% against 83.6% at the optimum (paired difference −13.2 points, 95% CI −13.9 to −12.4); 47.8% of their plans overbooked the transport fleet, by 1.97 seats on average when they did. A safety gate made every plan feasible but placed even fewer (67.6%): the gate removes bad bookings, it does not find new places.
+2. **Stronger decentralised baselines separate the causes.** Repeated rounds re-offer lapsed chairs and placed 85.4%, but 63.6% of those plans overbooked transport (only 36.4% feasible). Fixed transport quotas kept every plan feasible but placed 66.6% and left 51.2% of transport patients unplaced. Lapsed offers are fixed by rounds; the shared fleet needs a shared record.
+3. **Coordination recovers almost all of it.** Rounds of offers against a shared ledger placed 83.0%, within 0.5 points of the optimum, at about one extra minute of burden per patient.
+4. **Placing as many as possible is easy here; fairness is not.** Both greedy planners matched or nearly matched the optimal number placed, but the cohort gap was 15.5–16.9 points against 10.0 for the fair optimum, and under high scarcity 23.3 against 4.1. Only the fair objective kept patients who need transport from falling behind.
+5. Maximising the worse-off cohort cost nothing in patients placed and almost nothing in burden compared with the throughput optimum.
 
 ## Paper
 
 `paper/main.pdf`: *Separate Units Lose Patients, Greedy Planners Lose Fairness: Re-placing Dialysis Patients After a Unit Closure* (LaTeX source in `paper/`).
+
+## Sensitivity to transport
+
+`results/sensitivity_summary.csv` varies the share of patients who need transport (0.20, 0.35, 0.50) and the fleet size (0.5, 1.0, 1.5 times the default) at medium scarcity, 200 scenarios per setting with the same seeds. With half the fleet, the greedy planner, coordinated units and both optima all left a 40–49 point gap; with 1.5 times the fleet the fairness-first optimum held it to 2.3–5.6 points. Fleet size mattered more than transport demand.
 
 ## Run
 
@@ -69,7 +78,7 @@ What the numbers show:
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 pytest -q
-python3 run_benchmark.py            # 1,200 scenarios, about 90 seconds on a laptop CPU
+python3 run_benchmark.py            # 1,200 scenarios plus the sensitivity sweep, about 3 minutes on a laptop CPU
 ```
 
 `--per-cell N` changes the number of seeds per scarcity × severity cell; `--seed` the first seed.
@@ -77,7 +86,7 @@ python3 run_benchmark.py            # 1,200 scenarios, about 90 seconds on a lap
 ## Files
 
 - `dialysisflow/network.py`: seeded scenario generator
-- `dialysisflow/policies.py`: the seven policies, including the exact MILP (SciPy/HiGHS)
+- `dialysisflow/policies.py`: the nine policies, including the exact MILP (SciPy/HiGHS)
 - `dialysisflow/evaluate.py`: scoring, paired bootstrap, outputs
 - `results/`: per-scenario rows, summary, `results.json`, chart
 
@@ -86,12 +95,12 @@ python3 run_benchmark.py            # 1,200 scenarios, about 90 seconds on a lap
 - Synthetic networks. Chair counts, occupancy, travel limits, transport share and fleet size are illustrative, not taken from any service.
 - Travel is straight-line distance converted to minutes. There is no road network, traffic or multi-day planning.
 - The two cohorts are an operational construct (needs transport or not). The cohort gap is not a validated social or clinical fairness measure.
-- Unit agents are rule-based. No language-model agents are evaluated in this version.
+- Unit agents are rule-based. Language-model unit agents that read the ledger and make offers are planned for version 0.3.
 - Clinical priority, infection control, staffing rules and patient preference are not modelled.
 
 ## Related work
 
-Dialysis scheduling has been studied with exact optimisation, for example patient and technician scheduling (Farhadi, Ansari and Jara-Moroni, *Health Care Management Science*, 2023, doi:10.1007/s10729-023-09642-7) and branch-and-price appointment scheduling (Reihaneh, Ansari and Farhadi, *European Journal of Operational Research*, 2023, doi:10.1016/j.ejor.2023.01.024). This benchmark looks at a different setting: one-off re-placement after a closure, and what is lost when the receiving units decide separately.
+Dialysis scheduling has been studied with exact optimisation, for example patient and technician scheduling (Farhadi, Ansari and Jara-Moroni, *Health Care Management Science*, 2023, doi:10.1007/s10729-023-09642-7) and branch-and-price appointment scheduling (Reihaneh, Ansari and Farhadi, *European Journal of Operational Research*, 2023, doi:10.1016/j.ejor.2023.01.024). Exact equitable re-placement of dialysis patients after a disruption has been studied by Liu and Mostafavi (*Healthcare Analytics*, 2023, doi:10.1016/j.health.2023.100268). This benchmark asks what is lost when receiving units decide separately instead of following one plan, and how a central planner's order rule decides who is left without a place.
 
 ## Citation and licence
 

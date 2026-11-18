@@ -13,7 +13,7 @@ import numpy as np
 import scipy
 
 from . import __version__
-from .network import COHORTS, SCARCITY_LEVELS, SEVERITY_LEVELS, TRAVEL_LIMIT, Scenario, make_suite
+from .network import COHORTS, SCARCITY_LEVELS, SEVERITY_LEVELS, TRAVEL_LIMIT, Scenario, make_scenario, make_suite
 from .policies import POLICIES, Plan
 
 METRICS = ("fulfilment", "unmet_transport", "unmet_independent", "cohort_gap", "mean_burden",
@@ -118,3 +118,53 @@ def write_outputs(rows: Sequence[Dict[str, object]], summary: Dict[str, object],
         lines.append("| %s | %s | %s | %s | %s | %s | %s |" % (policy, f("fulfilment"), f("unmet_transport"),
                      f("unmet_independent"), f("cohort_gap"), f("mean_burden", False), f("feasible")))
     (out / "summary.md").write_text("\n".join(lines) + "\n")
+
+
+SWEEP_SHARES = (0.2, 0.35, 0.5)
+SWEEP_FLEET = (0.5, 1.0, 1.5)
+
+
+def run_sweep(n_per_cell: int = 100, base_seed: int = 9000, log=print) -> List[Dict[str, object]]:
+    """Sensitivity to transport: share of patients who need it and fleet size, at medium scarcity.
+
+    Every cell uses the same seeds, so cells differ only in the two transport settings.
+    """
+    rows = []
+    for share in SWEEP_SHARES:
+        for fleet in SWEEP_FLEET:
+            for severity in SEVERITY_LEVELS:
+                for k in range(n_per_cell):
+                    scenario = make_scenario(base_seed + k, "medium", severity, transport_share=share, fleet_factor=fleet)
+                    for name, policy in POLICIES.items():
+                        row = {"transport_share": share, "fleet_factor": fleet, "severity": severity,
+                               "seed": base_seed + k, "policy": name}
+                        row.update(score(scenario, policy(scenario)))
+                        rows.append(row)
+            log("sweep share=%.2f fleet=%.1f done" % (share, fleet))
+    return rows
+
+
+def summarise_sweep(rows: Sequence[Dict[str, object]]) -> List[Dict[str, object]]:
+    out = []
+    keys = sorted({(r["transport_share"], r["fleet_factor"], r["policy"]) for r in rows},
+                  key=lambda k: (k[0], k[1], list(POLICIES).index(k[2])))
+    for share, fleet, policy in keys:
+        sub = [r for r in rows if r["transport_share"] == share and r["fleet_factor"] == fleet and r["policy"] == policy]
+        gaps = [float(r["cohort_gap"]) for r in sub if not np.isnan(float(r["cohort_gap"]))]
+        out.append({"transport_share": share, "fleet_factor": fleet, "policy": policy, "scenarios": len(sub),
+                    "placed": float(np.mean([float(r["fulfilment"]) for r in sub])),
+                    "cohort_gap": float(np.mean(gaps)) if gaps else float("nan"),
+                    "unmet_transport": float(np.nanmean([float(r["unmet_transport"]) for r in sub])),
+                    "unmet_independent": float(np.nanmean([float(r["unmet_independent"]) for r in sub])),
+                    "feasible": float(np.mean([float(r["feasible"]) for r in sub]))})
+    return out
+
+
+def write_sweep(rows, summary, out: Path) -> None:
+    out.mkdir(parents=True, exist_ok=True)
+    with (out / "sensitivity_per_scenario.csv").open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()))
+        writer.writeheader(); writer.writerows(rows)
+    with (out / "sensitivity_summary.csv").open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(summary[0].keys()))
+        writer.writeheader(); writer.writerows(summary)

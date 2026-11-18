@@ -69,8 +69,14 @@ def _distance(a: Tuple[float, float], b: Tuple[float, float]) -> float:
     return math.hypot(a[0] - b[0], a[1] - b[1])
 
 
-def make_scenario(seed: int, scarcity: str, severity: str) -> Scenario:
-    """Build one network. Every random draw comes from ``seed``, so a scenario is fully reproducible."""
+def make_scenario(seed: int, scarcity: str, severity: str, transport_share: float = 0.35,
+                  fleet_factor: float = 1.0) -> Scenario:
+    """Build one network. Every random draw comes from ``seed``, so a scenario is fully reproducible.
+
+    ``transport_share`` is the chance that a displaced patient needs transport; ``fleet_factor``
+    scales the spare transport seats. The defaults give the main experiment; the sensitivity sweep
+    changes them without changing the order of random draws.
+    """
     rng = random.Random(seed)
     n_receiving = rng.randint(4, 6)
     units = ["U%d" % (i + 1) for i in range(n_receiving)]
@@ -96,13 +102,13 @@ def make_scenario(seed: int, scarcity: str, severity: str) -> Scenario:
         if shift not in closed_shifts:
             continue
         for _ in range(round(rng.uniform(0.8, 1.0) * closed_chairs)):
-            cohort = "transport" if rng.random() < 0.35 else "independent"
+            cohort = "transport" if rng.random() < transport_share else "independent"
             location = (closed_location[0] + rng.gauss(0, 8.0), closed_location[1] + rng.gauss(0, 8.0))
             patients.append(Patient(len(patients), shift, cohort, location))
 
     n_transport = sum(p.cohort == "transport" for p in patients)
     # Spare seats in the shared patient-transport fleet, per shift, for the whole network.
-    transport_seats = {s: max(1, round(rng.uniform(0.6, 1.0) * n_transport / len(closed_shifts))) for s in SHIFTS}
+    transport_seats = {s: max(1, round(fleet_factor * rng.uniform(0.6, 1.0) * n_transport / len(closed_shifts))) for s in SHIFTS}
 
     scenario = Scenario("S%05d" % seed, scarcity, severity, units, unit_location, free_chairs,
                         transport_seats, patients)
