@@ -1,6 +1,6 @@
 # DialysisFlow-AgentBench v0.2.1
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24354745.svg)](https://doi.org/10.5281/zenodo.24354745)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24354744.svg)](https://doi.org/10.5281/zenodo.24354744)
 
 **Re-placing displaced dialysis patients after a unit closure: independent unit agents, coordinated agents and an exact optimum on 1,200 synthetic networks**
 
