@@ -18,7 +18,7 @@ configs:
 - config_name: scenarios
   data_files: data/scenarios.jsonl
 - config_name: policy_results
-  data_files: data/policy_results.csv
+  data_files: data/policy_results.jsonl
 ---
 
 # DialysisFlow-AgentBench

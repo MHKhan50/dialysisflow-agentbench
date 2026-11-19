@@ -3,7 +3,7 @@
 
 Writes ``hf_export/`` with:
   data/scenarios.jsonl      one network per line (units, free chairs, transport seats, patients, travel times)
-  data/policy_results.csv   one row per scenario and policy (copied from results/per_scenario.csv)
+  data/policy_results.jsonl one row per scenario and policy (from results/per_scenario.csv)
   README.md                 the dataset card (copied from hf/README.md)
 
 Everything is regenerated from seeds, so the export matches the paper exactly.
@@ -11,6 +11,7 @@ Everything is regenerated from seeds, so the export matches the paper exactly.
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import shutil
 import sys
@@ -70,7 +71,14 @@ def main() -> None:
             fh.write(json.dumps(scenario_record(s), separators=(",", ":")) + "\n")
             n_patients += len(s.patients)
 
-    shutil.copy(ROOT / "results" / "per_scenario.csv", out / "data" / "policy_results.csv")
+    # The viewer infers one format for the whole repo, so both tables are JSON Lines.
+    text = {"scenario_id", "scarcity", "severity", "policy"}
+    whole = {"n_patients", "transport_overbooked", "chair_overbooked", "travel_violations"}
+    with open(ROOT / "results" / "per_scenario.csv", newline="", encoding="utf-8") as src, \
+            open(out / "data" / "policy_results.jsonl", "w", encoding="utf-8") as dst:
+        for row in csv.DictReader(src):
+            record = {k: (v if k in text else int(float(v)) if k in whole else float(v)) for k, v in row.items()}
+            dst.write(json.dumps(record, separators=(",", ":")) + "\n")
     shutil.copy(ROOT / "hf" / "README.md", out / "README.md")
     print("scenarios:", len(suite), "| displaced patients:", n_patients, "| folder:", out)
 

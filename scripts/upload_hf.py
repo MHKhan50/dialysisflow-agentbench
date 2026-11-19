@@ -17,7 +17,7 @@ def main() -> None:
     args = parser.parse_args()
     api = HfApi()
     api.create_repo(args.repo, repo_type="dataset", exist_ok=True)
-    api.upload_folder(repo_id=args.repo, repo_type="dataset", folder_path=args.folder,
+    api.upload_folder(repo_id=args.repo, repo_type="dataset", folder_path=args.folder, delete_patterns=["data/*.csv"],
                       commit_message="DialysisFlow-AgentBench v0.2.1 scenarios and policy results")
     print("https://huggingface.co/datasets/" + args.repo)
 
