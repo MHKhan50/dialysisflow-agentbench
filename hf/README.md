@@ -16,9 +16,9 @@ task_categories:
 - other
 configs:
 - config_name: scenarios
-  data_files: data/scenarios.jsonl
+  data_files: data/scenarios.parquet
 - config_name: policy_results
-  data_files: data/policy_results.jsonl
+  data_files: data/policy_results.parquet
 ---
 
 # DialysisFlow-AgentBench

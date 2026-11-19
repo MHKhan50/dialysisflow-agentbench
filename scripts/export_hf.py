@@ -2,8 +2,8 @@
 """Export the 1,200 benchmark scenarios and the per-policy results as a Hugging Face dataset folder.
 
 Writes ``hf_export/`` with:
-  data/scenarios.jsonl      one network per line (units, free chairs, transport seats, patients, travel times)
-  data/policy_results.jsonl one row per scenario and policy (from results/per_scenario.csv)
+  data/scenarios.parquet   one network per row (units, free chairs, transport seats, patients, travel times)
+  data/policy_results.parquet one row per scenario and policy (from results/per_scenario.csv)
   README.md                 the dataset card (copied from hf/README.md)
 
 Everything is regenerated from seeds, so the export matches the paper exactly.
@@ -79,6 +79,12 @@ def main() -> None:
         for row in csv.DictReader(src):
             record = {k: (v if k in text else int(float(v)) if k in whole else float(v)) for k, v in row.items()}
             dst.write(json.dumps(record, separators=(",", ":")) + "\n")
+    # Parquet is what the Hugging Face viewer reads directly, with the nested columns typed.
+    from datasets import Dataset  # pip install datasets
+    for name in ("scenarios", "policy_results"):
+        src = out / "data" / (name + ".jsonl")
+        Dataset.from_json(str(src)).to_parquet(str(out / "data" / (name + ".parquet")))
+        src.unlink()
     shutil.copy(ROOT / "hf" / "README.md", out / "README.md")
     print("scenarios:", len(suite), "| displaced patients:", n_patients, "| folder:", out)
 
