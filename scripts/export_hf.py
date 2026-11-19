@@ -44,7 +44,7 @@ def scenario_record(s) -> dict:
                 "shift": p.shift,
                 "cohort": p.cohort,
                 "travel_limit_min": TRAVEL_LIMIT[p.cohort],
-                "travel_min": {u: s.travel[(p.pid, u)] for u in s.units},
+                "travel_min": [s.travel[(p.pid, u)] for u in s.units],  # same order as "units"; a list keeps one schema for 4-6 units
                 "options": ["%s|%s" % o for o in s.options(p)],
             }
             for p in s.patients

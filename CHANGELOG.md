@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Hugging Face dataset: `scripts/export_hf.py` writes the 1,200 scenarios and the per-policy results with a dataset card (`hf/README.md`); `scripts/upload_hf.py` uploads them. Both tables are JSON Lines so the Hugging Face viewer can read them. Results are unchanged.
+- Hugging Face dataset: `scripts/export_hf.py` writes the 1,200 scenarios and the per-policy results with a dataset card (`hf/README.md`); `scripts/upload_hf.py` uploads them. Both tables are JSON Lines with one fixed schema (travel times are a list in unit order), so the Hugging Face viewer and `load_dataset` can read them. Results are unchanged.
 
 ## 0.2.1 (2026-11-18)
 

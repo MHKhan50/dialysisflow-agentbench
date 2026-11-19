@@ -42,7 +42,7 @@ configs:
 | `severity` | `partial` (two shifts closed) or `full` (all four) |
 | `units` | receiving units: `unit`, position `x_km`, `y_km` (the closed unit is at 20, 20) and `free_chairs` per shift |
 | `transport_seats` | spare seats in the shared transport fleet, per shift, for the whole network |
-| `patients` | displaced patients: `pid`, current `shift`, `cohort` (`transport` or `independent`), `travel_limit_min` (45 or 75), `travel_min` to each unit, and `options`, the feasible `unit|shift` pairs |
+| `patients` | displaced patients: `pid`, current `shift`, `cohort` (`transport` or `independent`), `travel_limit_min` (45 or 75), `travel_min` to each unit (a list in the same order as `units`), and `options`, the feasible `unit|shift` pairs |
 
 Shifts are `MWF-AM`, `MWF-PM`, `TTS-AM`, `TTS-PM`. A patient keeps their weekday pattern; moving between morning and afternoon is allowed and adds 20 minutes of burden. Travel time is 5 minutes plus 1.5 minutes per km.
 
