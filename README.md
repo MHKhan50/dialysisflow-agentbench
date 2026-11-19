@@ -4,6 +4,8 @@
 
 **Re-placing displaced dialysis patients after a unit closure: independent unit agents, coordinated agents and an exact optimum on 1,200 synthetic networks**
 
+Dataset on Hugging Face: [MHkhan50/dialysisflow-agentbench](https://huggingface.co/datasets/MHkhan50/dialysisflow-agentbench) (all 1,200 scenarios and every policy result).
+
 > Research benchmark on **synthetic operational data only**. It models chairs, shifts, travel time and a shared transport fleet. It holds no patient data, no clinical information and makes no clinical or treatment decisions.
 
 ## Question

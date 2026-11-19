@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Hugging Face dataset: `scripts/export_hf.py` writes the 1,200 scenarios and the per-policy results with a dataset card (`hf/README.md`); `scripts/upload_hf.py` uploads them. Results are unchanged.
+
 ## 0.2.1 (2026-11-18)
 
 - Two stronger decentralised baselines: fixed transport quotas per unit, and repeated rounds of separate offers without a shared record of transport.
