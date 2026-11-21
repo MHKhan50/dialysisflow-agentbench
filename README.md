@@ -106,4 +106,15 @@ Dialysis scheduling has been studied with exact optimisation, for example patien
 
 ## Citation and licence
 
+```bibtex
+@misc{hussain2026dialysis,
+  author    = {Hussain, Muzammal},
+  title     = {{Separate Units Lose Patients, Greedy Planners Lose Fairness: Re-placing Dialysis Patients After a Unit Closure}},
+  year      = {2026},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.24354744},
+  url       = {https://doi.org/10.5281/zenodo.24354744}
+}
+```
+
 See `CITATION.cff`. Code: MIT licence.
