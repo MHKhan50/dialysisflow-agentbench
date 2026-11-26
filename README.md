@@ -120,3 +120,7 @@ Dialysis scheduling has been studied with exact optimisation, for example patien
 Software (code, notebooks, results): [doi:10.5281/zenodo.24354744](https://doi.org/10.5281/zenodo.24354744).
 
 See `CITATION.cff`. Code: MIT licence.
+
+## Data licence
+
+Data: CC BY 4.0 ([`DATA_LICENSE.txt`](DATA_LICENSE.txt)); the same licence is used on the Kaggle dataset. Code: MIT.
